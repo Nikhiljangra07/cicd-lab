@@ -1,0 +1,27 @@
+{
+  "name": "cicd-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sandbox for learning CI/CD. Not production.",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src test"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^26.6.3",
+    "@types/supertest": "^7.2.1",
+    "jest": "^30.5.2",
+    "supertest": "^7.3.0",
+    "ts-jest": "^29.4.14",
+    "typescript": "^5.9.3"
+  }
+}
