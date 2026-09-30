@@ -6,7 +6,9 @@ on:                           # WHEN it runs
 
 jobs:
   test:                       # a job = one fresh virtual machine
-    runs-on: ubuntu-latest    # WHERE: GitHub-hosted Linux runner
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_CHANNEL: lab
     steps:                    # WHAT, in order; the job stops at the first failing step
       - uses: actions/checkout@v4       # 1. copy your repo onto the VM (it starts empty)
       - uses: actions/setup-node@v4     # 2. install Node
@@ -15,6 +17,5 @@ jobs:
       - run: npm ci                     # 3. install deps EXACTLY from package-lock.json
       - run: npm run typecheck          # 4. tsc --noEmit
       - run: npm test    
-          env:
-      RELEASE_CHANNEL: lab
+       
                # 5. jest
