@@ -31,20 +31,6 @@ jobs:
         with:
           name: dist
           path: dist/
-
-  deploy:
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'   # only real merges to main
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/download-artifact@v4   # the SAME bytes build produced; no rebuild here
-        with:
-          name: dist
-          path: dist/
-      - name: Mock deploy
-        run: |
-          echo "Would deploy commit ${{ github.sha }} to production"
-          ls -la dist/
   smoke:
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
