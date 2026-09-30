@@ -1,0 +1,17 @@
+name: CI                      # the label you'll see in the Actions tab and on commits
+
+on:                           # WHEN it runs
+  push:                       #   every push to any branch
+  pull_request:               #   and every PR (this matters later, for branch protection)
+
+jobs:
+  test:                       # a job = one fresh virtual machine
+    runs-on: ubuntu-latest    # WHERE: GitHub-hosted Linux runner
+    steps:                    # WHAT, in order; the job stops at the first failing step
+      - uses: actions/checkout@v4       # 1. copy your repo onto the VM (it starts empty)
+      - uses: actions/setup-node@v4     # 2. install Node
+        with:
+          node-version: "20"
+      - run: npm ci                     # 3. install deps EXACTLY from package-lock.json
+      - run: npm run typecheck          # 4. tsc --noEmit
+      - run: npm test                   # 5. jest
