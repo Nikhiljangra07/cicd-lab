@@ -31,20 +31,6 @@ jobs:
         with:
           name: dist
           path: dist/
-
-  deploy:
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'   # only real merges to main
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/download-artifact@v4   # the SAME bytes build produced; no rebuild here
-        with:
-          name: dist
-          path: dist/
-      - name: Mock deploy
-        run: |
-          echo "Would deploy commit ${{ github.sha }} to production"
-          ls -la dist/
   smoke:
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -56,7 +42,7 @@ jobs:
           for i in $(seq 1 30); do
             BODY=$(curl -sS -m 10 "$URL" || true)
             echo "attempt $i: $BODY"
-            if echo "$BODY" | grep -q '"ok":true'; then exit 0; fi
+            if echo "$BODY" | grep -q "${{ github.sha }}"; then exit 0; fi
             sleep 10
           done
           echo "service never answered ok within 5 minutes"; exit 1
