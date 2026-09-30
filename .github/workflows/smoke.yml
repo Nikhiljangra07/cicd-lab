@@ -1,0 +1,24 @@
+name: Smoke
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  smoke:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Wait for Railway to serve the commit CI just approved
+        run: |
+          SHA="${{ github.event.workflow_run.head_sha }}"
+          URL="https://cicd-lab-production.up.railway.app/health"
+          for i in $(seq 1 30); do
+            BODY=$(curl -sS -m 10 "$URL" || true)
+            echo "attempt $i: $BODY"
+            if echo "$BODY" | grep -q "$SHA"; then exit 0; fi
+            sleep 10
+          done
+          echo "service never served $SHA within 5 minutes"; exit 1
