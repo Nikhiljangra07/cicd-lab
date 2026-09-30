@@ -1,20 +1,47 @@
-name: CI                      # the label you'll see in the Actions tab and on commits
+name: CI
 
-on:                           # WHEN it runs
-  push:                       #   every push to any branch
-  pull_request:               #   and every PR (this matters later, for branch protection)
+on:
+  push:
+    branches: [main]          # only main pushes; branches are covered by pull_request (no more double runs)
+  pull_request:
 
 jobs:
-  test:                       # a job = one fresh virtual machine
-    runs-on: ubuntu-latest
-    
-    steps:                    # WHAT, in order; the job stops at the first failing step
-      - uses: actions/checkout@v4       # 1. copy your repo onto the VM (it starts empty)
-      - uses: actions/setup-node@v4     # 2. install Node
+  test:
+    runs-on: ubuntu-24.04     # pinned: "latest" changes under you on a date GitHub picks
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "20"
-      - run: npm ci                     # 3. install deps EXACTLY from package-lock.json
-      - run: npm run typecheck          # 4. tsc --noEmit
-      - run: npm test    
-       
-               # 5. jest
+          node-version: "22"
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  build:
+    needs: test               # waits for test; skipped entirely if test is red
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4   # hand dist/ to later jobs
+        with:
+          name: dist
+          path: dist/
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'   # only real merges to main
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4   # the SAME bytes build produced; no rebuild here
+        with:
+          name: dist
+          path: dist/
+      - name: Mock deploy
+        run: |
+          echo "Would deploy commit ${{ github.sha }} to production"
+          ls -la dist/
